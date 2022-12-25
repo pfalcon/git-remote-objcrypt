@@ -198,12 +198,11 @@ const handleFetchBatch = async (address, remote, refs) => {
 }
 
 const GITERN_PREFIX = "gitern://"
-const SSH_PREFIX = "git@gitern.com:"
 const parseAddr = (address) => {
     let uri = address.replace(GITERN_PREFIX, '')
     let account = uri.split(path.sep).filter((p) => p.length)[0]
     return {
-        sshAddr: SSH_PREFIX + uri,
+        sshAddr: uri,
         account,
     }
 }
