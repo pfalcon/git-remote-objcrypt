@@ -131,7 +131,9 @@ const handlePushBatch = async (address, account, remote, refspecs) => {
     await keys.save(account)
 
     let dsts = []
-    for (const refspec of refspecs) {
+    for (let refspec of refspecs) {
+        // If push --force is used, refspec may start with "+".
+        if (refspec.startsWith("+")) refspec = refspec.substring(1)
         var [src, dst] = refspec.split(':')
         dsts.push(dst)
 
