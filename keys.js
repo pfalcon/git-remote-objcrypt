@@ -82,12 +82,19 @@ class Keys {
   }
 
   save = async(account) => {
-    let giternList = spawn("ssh", ["git@gitern.com", "gitern-pubkey-list", 
-      "--full", account])
+    // Do pubkey discovery only once at the beginning.
+    // TODO: Should have separate explicit commands to add/delete more keys.
+    if (this.lockedKeys.size > 0) return
+
+    log.debug("account: %s", account)
+    let giternList = spawn("sh", ["-c", "ssh -v " + account.split(":")[0] + " 2>&1"])
     let updated = false
     
     for await (const line of lines(giternList.stdout)) {
-      let key = sshpk.parseKey(line)
+      log.silly("line: %s", line)
+      const match = /Server accepts key: ([^ ]+)/.exec(line)
+      if (!match) continue
+      let key = sshpk.parseKey(fs.readFileSync(match[1] + PUBEXT))
       let fp = key.fingerprint().toString()
       log.debug("account %s has pubkey %s", account, fp)
       if (this.lockedKeys.has(fp)) continue
