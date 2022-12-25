@@ -179,7 +179,7 @@ const handleFetchBatch = async (address, remote, refs) => {
     log.debug("handle fetch address %s remote %s refs %o", address, remote, refs)
 
     // pull into mirror so it merges
-    gitSync(['pull', address, ...refs], {cwd: MIRROR_DIR, verbose: true})
+    gitSync(['pull', '--rebase', address, ...refs], {cwd: MIRROR_DIR, verbose: true})
 
     // load crypt.keys
     let keys = new Keys(CRYPT_KEYS, MIRROR_DIR)
