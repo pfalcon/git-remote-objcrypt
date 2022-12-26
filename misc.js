@@ -17,7 +17,18 @@ const line = async(input) => {
   }
 }
 
+async function streamToBin(stream) {
+    const chunks = [];
+
+    for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+    }
+
+    return Buffer.concat(chunks)
+}
+
 module.exports = {
   lines: lines,
-  line: line
+  line: line,
+  streamToBin: streamToBin,
 }
