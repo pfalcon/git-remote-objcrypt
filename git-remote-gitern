@@ -8,6 +8,7 @@ const { lines } = require('./misc.js')
 const { get } = require('./map.js')
 const Keys = require('./keys.js')
 const { exit } = require('process')
+const fs = require('fs')
 
 const GIT_DIR = process.env.GIT_DIR
 const DIR = path.resolve(GIT_DIR + "/..")
@@ -94,8 +95,12 @@ const handleList = async (address) => {
 // e.g. git init .git/gitern
 // XXX bare doesn't work for some reason. Might need to set GIT_DIR
 const initMirrorRepo = () => {
-    log.verbose("(re)initing mirror repo")
-    gitSync(['init', MIRROR_DIR])
+    if (!fs.existsSync(MIRROR_DIR + "/.git")) {
+        log.verbose("initing mirror repo")
+        gitSync(['init', MIRROR_DIR])
+    } else {
+        log.debug("mirror repo exists")
+    }
 }
 
 // push +<src>:<dst> 
