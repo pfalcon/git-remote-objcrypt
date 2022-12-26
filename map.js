@@ -54,6 +54,36 @@ const getKey = async(dst, tag, val) => {
   return _rev_map[val]
 }
 
+const set = async(dst, tag, key, val) => {
+  log.silly("refmap: set %s->%s", key, val)
+  if (_map === null) {
+    if (!await loadMap(dst, tag)) {
+      _map = {}
+      _rev_map = {}
+    }
+  }
+
+  _map[key] = val
+  _rev_map[val] = key
+}
+
+const verifySet = async(dst, tag, key, val) => {
+  log.silly("refmap: verifySet %s->%s", key, val)
+  if (_map === null) {
+    log.error("expected refmap to be loaded")
+    throw Error()
+  }
+
+  if (_map[key] !== val) {
+    log.error("expected mapping not in refmap")
+    throw Error()
+  }
+  if (_rev_map[val] !== key) {
+    log.error("expected reverse mapping not in refmap")
+    throw Error()
+  }
+}
+
 const tagWriter = (dst) => {
   return git(["hash-object","-w", "--stdin"], { cwd : dst })
 }
@@ -106,5 +136,7 @@ const update = async(dst, tag, kvs) => {
 module.exports = {
   get: get,
   getKey: getKey,
+  set: set,
+  verifySet: verifySet,
   update: update
 }
