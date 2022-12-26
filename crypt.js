@@ -69,9 +69,28 @@ const encryptString = (key, input, encoding = null) => {
   return cryptString(encryptStream, key, input, encoding)
 }
 
+const cryptBin = (pher, key, input) => {
+  let output = new stream.PassThrough()
+  pher(key, stream.Readable.from(input), output, null)
+  let result = []
+  output.on('data', (d) => result.push(d))
+  return new Promise((resolve) => output.on('end', () => {
+    resolve(Buffer.concat(result))}))
+}
+
+const decryptBin = (key, input) => {
+  return cryptBin(decryptStream, key, input)
+}
+
+const encryptBin = (key, input) => {
+  return cryptBin(encryptStream, key, input)
+}
+
 module.exports = {
   encryptStream,
   decryptStream,
   decryptString,
   encryptString,
+  decryptBin,
+  encryptBin,
 }
