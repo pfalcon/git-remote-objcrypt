@@ -3,6 +3,9 @@ const m = require('./misc.js')
 const log = require('./logger.js')
 // TODO v2: version the tag file ... ie give each a parent
 
+let _map = null
+let _rev_map = null
+
 const tagReadStream = (dst, tag) => {
   // verify ref exists
   let verfiyRef = gitSync(["show-ref", "--verify", "-q", tag], 
@@ -14,42 +17,41 @@ const tagReadStream = (dst, tag) => {
   return git(["cat-file", "blob", tag], { cwd : dst }).stdout
 }
 
-// TODO: should perform binary search rather than scanning
-const get = async(dst, tag, key) => {
-  log.profile(`get value ${key}`, { level: 'silly' });
-  
-  let tagRdSt = tagReadStream(dst, tag)
-  if (tagRdSt) {
+const loadMap = async(dst, tag) => {
+    log.profile(`loadMap`, { level: 'silly' });
+    let tagRdSt = tagReadStream(dst, tag)
+    if (tagRdSt === null) {
+      log.verbose("no map ref %s exists in %s", tag, dst)
+      return false
+    }
+    _map = {}
+    _rev_map = {}
     for await (const line of m.lines(tagRdSt)) {
       let [lkey, value] = line.split(" ")
-      if (lkey == key) {
-        log.profile(`get value ${key}`, { level: 'silly' });
-        return value
-      }
+      _map[lkey] = value
+      _rev_map[value] = lkey
     }
-    log.verbose("key %s not found", key)
-    return
-  }
-  log.verbose("tag %s not found in %s", tag, dst)
+    log.verbose("loaded objid map")
+    log.profile(`loadMap`, { level: 'silly' });
+    return true
 }
 
-// TODO: this is necessarily O(N) unless we create a reverse map
-const getKey = async(dst, tag, val) => {
-  log.profile(`get key ${val}`, { level: 'silly' });
-  
-  let tagRdSt = tagReadStream(dst, tag)
-  if (tagRdSt) {
-    for await (const line of m.lines(tagRdSt)) {
-      let [key, lval] = line.split(" ")
-      if (lval == val) {
-        log.profile(`get key ${val}`, { level: 'silly' });
-        return key
-      }
-    }
-    log.verbose("val %s not found", val)
-    return
+const get = async(dst, tag, key) => {
+  if (_map === null) {
+    if (!await loadMap(dst, tag)) return
   }
-  log.verbose("tag %s not found in %s", tag, dst)
+
+  if (!(key in _map)) log.verbose("key %s not found", key)
+  return _map[key]
+}
+
+const getKey = async(dst, tag, val) => {
+  if (_rev_map === null) {
+    if (!await loadMap(dst, tag)) return
+  }
+
+  if (!(val in _rev_map)) log.verbose("val %s not found", val)
+  return _rev_map[val]
 }
 
 const tagWriter = (dst) => {
