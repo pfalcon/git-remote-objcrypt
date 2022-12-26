@@ -107,6 +107,11 @@ class Mirror {
     let res = await line(hashObject.stdout)
     log.verbose("mirrored blob %s=>%s", oid, res)
     this.refmap[res] = oid
+    if (this.push) {
+      map.set(this.dst, this.refmaptag, res, oid)
+    } else {
+      map.verifySet(this.dst, this.refmaptag, oid, res)
+    }
     return res
   }
 
@@ -148,6 +153,11 @@ class Mirror {
     let res = await line(mktree.stdout)
     log.verbose("mirrored tree %s=>%s", oid, res)
     this.refmap[res] = oid
+    if (this.push) {
+      map.set(this.dst, this.refmaptag, res, oid)
+    } else {
+      map.verifySet(this.dst, this.refmaptag, oid, res)
+    }
     return res
   }
 
@@ -185,6 +195,7 @@ class Mirror {
       let catFile = git(["cat-file", "commit", commit], { cwd: this.src })
       this.cryptStream(this.key, catFile.stdout, commitTree.stdin, 'base64')
       res = await line(commitTree.stdout)
+      map.set(this.dst, this.refmaptag, res, commit)
     } else {
       // decrypt the message of the commit and hash the message
       // as a commit object
@@ -192,6 +203,7 @@ class Mirror {
       let hashObject = git(["hash-object", "-w", "--stdin", "-t", "commit"], { cwd: this.dst })
       this.cryptStream(this.key, logMsg.stdout, hashObject.stdin, 'base64')
       res = await line(hashObject.stdout)
+      map.verifySet(this.dst, this.refmaptag, commit, res)
     }
 
     log.verbose("mirrored commit %s=>%s", commit, res)
