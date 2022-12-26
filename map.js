@@ -133,10 +133,28 @@ const update = async(dst, tag, kvs) => {
   return oid
 }
 
+const save = async(dst, tag) => {
+  log.profile('save', { level: 'silly' })
+
+  const tagWr = tagWriter(dst)
+  for (const [k, v] of Object.entries(_map)) {
+    tagWr.stdin.write(`${k} ${v}\n`)
+  }
+  tagWr.stdin.end()
+  const oid = await m.line(tagWr.stdout)
+
+  // update the tag to point to the new object
+  gitSync(["update-ref", tag, oid], { cwd : dst })
+
+  log.profile('save', { level: 'silly' })
+  return oid
+}
+
 module.exports = {
   get: get,
   getKey: getKey,
   set: set,
   verifySet: verifySet,
+  save: save,
   update: update
 }
