@@ -2,7 +2,7 @@ const { git, gitSync } = require('./git.js')
 const { lines, line } = require('./misc.js')
 const log = require('./logger.js')
 const readline = require('readline')
-const { get, getKey, update } = require('./map.js')
+const map = require('./map.js')
 const crypt = require('./crypt.js')
 
 class Mirror {
@@ -31,7 +31,7 @@ class Mirror {
     if (obj) return obj[0]
 
     // if we're pushing, dst is mirror, else src is mirror
-    let getOID = this.push ? getKey : get
+    let getOID = this.push ? map.getKey : map.get
     obj = await getOID(this.mir, this.refmaptag, oid)
     if (!obj) {
       log.debug("could not find oid %s in %s", oid, this.refmaptag)
@@ -54,7 +54,7 @@ class Mirror {
       let cid = await line(showRef.stdout)
       if (cid && showRef.status == 0) {
         log.debug("ref %s has oid %s in %s", ref, cid, this.dst)
-        not = await getKey(this.mir, this.refmaptag, cid)
+        not = await map.getKey(this.mir, this.refmaptag, cid)
       }
     }
 
@@ -77,7 +77,7 @@ class Mirror {
         log.verbose("updating ref in dst %s %s", ref, lastCommit)
         gitSync(["update-ref", ref, lastCommit], {cwd: this.dst})
       }
-      return await update(this.dst, this.refmaptag, this.refmap)
+      return await map.update(this.dst, this.refmaptag, this.refmap)
     }
   }
 
