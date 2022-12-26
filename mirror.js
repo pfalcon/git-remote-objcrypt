@@ -18,21 +18,15 @@ class Mirror {
       this.cryptStream = crypt.decryptStream
       this.cryptString = crypt.decryptString
     }
-    this.refmap = {}
     this.refmaptag = refmaptag
     this.key = key
     log.verbose("mirroring src %s to dst %s", src, dst)
   }
 
   lookup = async (oid) => {
-    // if we're pushing, refmap is cryptoid => decryptoid 
-    // else, it's decryptoid => cryptoid
-    let obj = Object.entries(this.refmap).find(i => i[1] == oid)
-    if (obj) return obj[0]
-
     // if we're pushing, dst is mirror, else src is mirror
     let getOID = this.push ? map.getKey : map.get
-    obj = await getOID(this.mir, this.refmaptag, oid)
+    const obj = await getOID(this.mir, this.refmaptag, oid)
     if (!obj) {
       log.debug("could not find oid %s in %s", oid, this.refmaptag)
     }
@@ -106,7 +100,6 @@ class Mirror {
     this.cryptStream(this.key, catFile.stdout, hashObject.stdin)
     let res = await line(hashObject.stdout)
     log.verbose("mirrored blob %s=>%s", oid, res)
-    this.refmap[res] = oid
     if (this.push) {
       map.set(this.dst, this.refmaptag, res, oid)
     } else {
@@ -152,7 +145,6 @@ class Mirror {
     mktree.stdin.end()
     let res = await line(mktree.stdout)
     log.verbose("mirrored tree %s=>%s", oid, res)
-    this.refmap[res] = oid
     if (this.push) {
       map.set(this.dst, this.refmaptag, res, oid)
     } else {
@@ -207,7 +199,6 @@ class Mirror {
     }
 
     log.verbose("mirrored commit %s=>%s", commit, res)
-    this.refmap[res] = commit
     return res
   }
 }
