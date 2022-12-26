@@ -88,51 +88,6 @@ const tagWriter = (dst) => {
   return git(["hash-object","-w", "--stdin"], { cwd : dst })
 }
 
-// expected format of a line is `${key} ${value}`
-const insert = async(dst, tag, lines) => { 
-  log.profile(`insert`, { level: 'silly' })
-
-  lines.sort()
-  tagWr = tagWriter(dst)
-  tagRdSt = tagReadStream(dst, tag)
-  if (tagRdSt) {
-    for await (const line of m.lines(tagRdSt)) {
-      // if any new lines go before line, write them out
-      while (lines.length && line > lines[0]) {
-        tagWr.stdin.write(`${lines.shift()}\n`)
-      }
-      // occasionally we are rewrite a line
-      if (line == lines[0]) {
-        lines.shift()
-        log.warn("dup line %s", line)
-      }
-
-      tagWr.stdin.write(`${line}\n`)
-    }
-  }
-
-  // write remaining lines
-  for (const l of lines) {
-    tagWr.stdin.write(`${l}\n`)
-  }
-
-  tagWr.stdin.end()
-  log.profile(`insert`, { level: 'silly' });
-  return await m.line(tagWr.stdout)
-}
-
-const update = async(dst, tag, kvs) => {
-  // write kvs to the file
-  let entries = Object.entries(kvs).map(kv => {
-    return `${kv[0]} ${kv[1]}`
-  })
-  oid = await insert(dst, tag, entries)
-  
-  // update the tag to point to the new object
-  gitSync(["update-ref", tag, oid], { cwd : dst })
-  return oid
-}
-
 const save = async(dst, tag) => {
   log.profile('save', { level: 'silly' })
 
@@ -156,5 +111,4 @@ module.exports = {
   set: set,
   verifySet: verifySet,
   save: save,
-  update: update
 }
