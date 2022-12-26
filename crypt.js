@@ -41,6 +41,24 @@ const decryptStream = (key, input, output, encoding = null) => {
   })
 }
 
+const decryptStreamIn = (key, input, encoding = null) => {
+  let options = {}
+  if (encoding) {
+    // input outputs strings so we can decode them as
+    // defaultEncoding
+    input.setEncoding('utf8')
+    options = {defaultEncoding: encoding, decodeStrings: true}
+  }
+  let ivr = new IVReader(options)
+  input.pipe(ivr)
+  return new Promise((resolve) => {ivr.on('iv', (iv) => {
+    let deci = crypto.createDecipheriv(CIPHER, key, iv)
+    ivr.pipe(deci)
+    resolve(deci)
+    })
+  })
+}
+
 const encryptStream = (key, input, output, encoding = null) => {
   let iv = crypto.randomBytes(IVSIZE)
   // use passthrough to recode stream joining iv + ciph
@@ -89,6 +107,7 @@ const encryptBin = (key, input) => {
 module.exports = {
   encryptStream,
   decryptStream,
+  decryptStreamIn,
   decryptString,
   encryptString,
   decryptBin,
