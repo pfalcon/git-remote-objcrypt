@@ -77,7 +77,7 @@ class Mirror {
         log.verbose("updating ref in dst %s %s", ref, lastCommit)
         gitSync(["update-ref", ref, lastCommit], {cwd: this.dst})
       }
-      return await map.update(this.dst, this.refmaptag, this.refmap)
+      return await map.save(this.dst, this.refmaptag)
     }
   }
 
