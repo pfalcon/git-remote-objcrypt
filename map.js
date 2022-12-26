@@ -5,6 +5,11 @@ const log = require('./logger.js')
 
 let _map = null
 let _rev_map = null
+let _key = null
+
+const setKey = (key) => {
+  _key = key
+}
 
 const tagReadStream = (dst, tag) => {
   // verify ref exists
@@ -111,4 +116,5 @@ module.exports = {
   set: set,
   verifySet: verifySet,
   save: save,
+  setKey: setKey,
 }
