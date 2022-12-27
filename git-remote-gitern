@@ -208,9 +208,11 @@ const handleFetchBatch = async (address, remote, refs) => {
     log.verbose("complete fetch for %o", refs)
 }
 
-const GITERN_PREFIX = "gitern://"
 const parseAddr = (address) => {
-    let uri = address.replace(GITERN_PREFIX, '')
+    let uri = address
+    const i = uri.indexOf("://")
+    if (i > 0) uri = uri.substring(i + 3)
+
     let account = uri.split(path.sep).filter((p) => p.length)[0]
     return {
         sshAddr: uri,
