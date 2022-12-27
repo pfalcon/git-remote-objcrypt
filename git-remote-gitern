@@ -5,7 +5,7 @@ const path = require('path')
 const Mirror = require('./mirror.js')
 const log = require('./logger.js')
 const { lines } = require('./misc.js')
-const { get } = require('./map.js')
+const { get, setKey } = require('./map.js')
 const Keys = require('./keys.js')
 const { exit } = require('process')
 const fs = require('fs')
@@ -75,6 +75,7 @@ const handleList = async (address, account) => {
 
     let keys = new Keys(CRYPT_KEYS, MIRROR_DIR)
     await keys.load()
+    setKey(keys.key)
     await keys.save(account)
 
     // for each ls-remote entry look up the oid in refmap
@@ -137,6 +138,7 @@ const handlePushBatch = async (address, account, remote, refspecs) => {
     // update crypt.keys
     let keys = new Keys(CRYPT_KEYS, MIRROR_DIR)
     await keys.load()
+    setKey(keys.key)
     await keys.save(account)
 
     let dsts = []
