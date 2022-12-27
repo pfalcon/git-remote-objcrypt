@@ -1,6 +1,7 @@
 const { git, gitSync } = require('./git.js')
 const m = require('./misc.js')
 const log = require('./logger.js')
+const crypt = require('./crypt.js')
 // TODO v2: version the tag file ... ie give each a parent
 
 let _map = null
@@ -29,6 +30,9 @@ const loadMap = async(dst, tag) => {
       log.verbose("no map ref %s exists in %s", tag, dst)
       return false
     }
+
+    tagRdSt = await crypt.decryptStreamIn(_key, tagRdSt)
+
     _map = {}
     _rev_map = {}
     for await (const line of m.lines(tagRdSt)) {
@@ -97,9 +101,14 @@ const save = async(dst, tag, enckey) => {
   log.profile('save', { level: 'silly' })
 
   const tagWr = tagWriter(dst)
+  let buf = "";
   for (const [k, v] of Object.entries(_map)) {
-    tagWr.stdin.write(`${k} ${v}\n`)
+    buf += `${k} ${v}\n`
   }
+
+  const cryp = await crypt.encryptBin(enckey, buf)
+  tagWr.stdin.write(cryp)
+
   tagWr.stdin.end()
   const oid = await m.line(tagWr.stdout)
 
