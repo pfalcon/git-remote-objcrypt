@@ -93,7 +93,7 @@ const tagWriter = (dst) => {
   return git(["hash-object","-w", "--stdin"], { cwd : dst })
 }
 
-const save = async(dst, tag) => {
+const save = async(dst, tag, enckey) => {
   log.profile('save', { level: 'silly' })
 
   const tagWr = tagWriter(dst)
