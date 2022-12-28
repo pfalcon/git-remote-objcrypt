@@ -227,7 +227,7 @@ const main = async () => {
     let fetches = new Set()
 
     for await (const line of lines(process.stdin)) {
-        log.verbose("git command '%s'", line)
+        log.debug("=== git command '%s' ===", line)
         if (line == "capabilities") {
             handleCapabilities()
         } else if (line.startsWith("option")) {
@@ -252,6 +252,7 @@ const main = async () => {
                 process.exit(0)
             }
         }
+        log.debug("")
     }
 }
 
