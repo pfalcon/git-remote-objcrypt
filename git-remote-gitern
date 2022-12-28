@@ -12,9 +12,9 @@ const fs = require('fs')
 
 const GIT_DIR = process.env.GIT_DIR
 const DIR = path.resolve(GIT_DIR + "/..")
-const MIRROR_DIR = GIT_DIR + "/gitern"
-const CRYPT_MAP = "refs/gitern/crypt.map"
-const CRYPT_KEYS = "refs/gitern/crypt.keys"
+const MIRROR_DIR = GIT_DIR + "/objcrypt"
+const CRYPT_MAP = "refs/objcrypt/crypt.map"
+const CRYPT_KEYS = "refs/objcrypt/crypt.keys"
 
 const handleCapabilities = async () => {
     caps = ["fetch", "push", "option"]
