@@ -98,11 +98,14 @@ const handleList = async (address, account) => {
 
 // create encrypted repo in .git if it doesn't already exist (git init does this for you)
 // e.g. git init .git/gitern
-// XXX bare doesn't work for some reason. Might need to set GIT_DIR
 const initMirrorRepo = () => {
     if (!fs.existsSync(MIRROR_DIR + "/.git")) {
         log.verbose("initing mirror repo")
-        gitSync(['init', MIRROR_DIR])
+        // We create bare repo in ./.git, because that's the normal value of
+        // GIT_DIR while running this code (that's value from the main
+        // uncrypted repo, and we just "reuse" it when accessing the mirror
+        // repo, to not set it explicitly).
+        gitSync(['init', '--bare', MIRROR_DIR + '/.git'])
     } else {
         log.debug("mirror repo exists")
     }
@@ -191,8 +194,8 @@ const handlePushBatch = async (address, account, remote, refspecs) => {
 const handleFetchBatch = async (address, remote, refs) => {
     log.debug("handle fetch address %s remote %s refs %o", address, remote, refs)
 
-    // pull into mirror so it merges
-    gitSync(['pull', '--rebase', address, ...refs], {cwd: MIRROR_DIR, verbose: true})
+    const fetchrefs = Array.from(refs).map(x => x + ":" + x)
+    gitSync(['fetch', '-f', address, ...fetchrefs], {cwd: MIRROR_DIR, verbose: true})
 
     // load crypt.keys
     let keys = new Keys(CRYPT_KEYS, MIRROR_DIR)
