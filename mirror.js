@@ -60,6 +60,7 @@ class Mirror {
     let lastCommit
     log.profile("mirror commits", {level: 'silly'})
     for await (const commit of lines(revList.stdout)) {
+      log.debug("----- mirroring commit %s -----", commit)
       lastCommit = await this.mirrorCommit(commit)
     }
     log.profile("mirror commits", {level: 'silly'})
