@@ -96,12 +96,18 @@ const cryptBin = (pher, key, input) => {
     resolve(Buffer.concat(result))}))
 }
 
-const decryptBin = (key, input) => {
+const decryptBin = (key, input, encoding = null) => {
+  if (encoding == "hex") {
+    input = input.toString()
+    input = Buffer.from(input, "hex")
+  }
   return cryptBin(decryptStream, key, input)
 }
 
-const encryptBin = (key, input) => {
-  return cryptBin(encryptStream, key, input)
+const encryptBin = async(key, input, encoding = null) => {
+  let r = cryptBin(encryptStream, key, input)
+  if (encoding == "hex") r = (await r).toString("hex")
+  return r
 }
 
 module.exports = {
