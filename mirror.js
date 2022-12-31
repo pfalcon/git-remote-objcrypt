@@ -14,9 +14,11 @@ class Mirror {
     if (this.push) {
       this.cryptStream = crypt.encryptStream
       this.cryptString = crypt.encryptString
+      this.cryptBin = crypt.encryptBin
     } else {
       this.cryptStream = crypt.decryptStream
       this.cryptString = crypt.decryptString
+      this.cryptBin = crypt.decryptBin
     }
     this.refmaptag = refmaptag
     this.key = key
@@ -137,7 +139,7 @@ class Mirror {
           log.error("unknown object type, line: %s", line)
       }
 
-      objs += `${mode} ${type} ${mapoid}\t${await this.cryptString(this.key, name, 'hex')}\n`
+      objs += `${mode} ${type} ${mapoid}\t${await this.cryptBin(this.key, Buffer.from(name), 'hex')}\n`
     }
 
     log.debug("making tree with objects:\n%s", objs)
