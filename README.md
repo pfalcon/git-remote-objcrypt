@@ -1,3 +1,18 @@
+# git-remote-objcrypt
+
+git-remote-objcrypt is a git remote helper that end to end encrypts git
+repos without a custom remote receiver and without additional user key
+management. It's a fork of https://github.com/huumn/git-remote-gitern
+without ties to a particular hosting service, with some additional corner
+cases handled, bugfixes, and some optimizations.
+
+git-remote-objcrypt requires just a git repository accessed via SSH using
+an SSH key.
+
+Git remote prefix which should be used is `objcrypt://`.
+
+Below is the original README of upstream project.
+
 # git-remote-gitern
 
 git-remote-gitern is a git remote helper that end to end encrypts git repos without a custom remote receiver and without additional user key management. It's built for [gitern](https://gitern.com) and is unironically hosted here. For demonstration, this repo has been encrypted using itself: [github.com/huumn/git-remote-gitern-encrypted](https://github.com/huumn/git-remote-gitern-encrypted)
